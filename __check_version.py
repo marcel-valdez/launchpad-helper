@@ -3,7 +3,7 @@
 import sys
 
 from launchpadlib.launchpad import Launchpad
-from latest_version import get_latest_version
+from __latest_version import get_latest_version
 
 def parse_args():
   if len(sys.argv) < 3:

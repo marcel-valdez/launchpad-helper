@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CHECK_VERSION=$SCRIPT_DIR/__check_version.py
+config_file=$1
+cat $config_file | xargs -l1 bash -c "python $CHECK_VERSION \$0 \$1 \$2" | xargs -I__check__ echo __check__
+

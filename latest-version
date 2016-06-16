@@ -16,11 +16,11 @@ def get_ppa_archive(launchpad, ppa_url):
   owner = launchpad.people[owner_name]
   return owner.getPPAByName(name = package_name)
 
-def get_distro_archive(launchpad, distro_name):
+def get_distro_archive(launchpad, distro_name = DISTRO):
   distro = launchpad.distributions[distro_name]
   return distro.main_archive
 
-def get_latest_package(archive, app_name, distro_url):
+def get_latest_package(archive, app_name, distro_url = DISTRO_ARCH_SERIES_URL):
   binaries = archive.getPublishedBinaries(
     status = 'Published',
     exact_match = True,
@@ -63,7 +63,7 @@ if __name__ == '__main__':
   if ppa_url != None:
     archive = get_ppa_archive(launchpad, ppa_url)
   else:
-    archive = get_distro_archive(launchpad, DISTRO)
-  package = get_latest_package(archive, app_name, DISTRO_ARCH_SERIES_URL)
+    archive = get_distro_archive(launchpad)
+  package = get_latest_package(archive, app_name)
   print package.binary_package_version
   exit(0)

@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CHECK_VERSION=$SCRIPT_DIR/__check_version.py
-config_file=$1
-cat $config_file | xargs -l1 bash -c "python $CHECK_VERSION \$0 \$1 \$2" | xargs -I__check__ echo __check__
+CHECK_VERSION="$SCRIPT_DIR/__check_version.py"
+config_file="$1"
+if [ "$1" == "" ]; then
+  if [ "$CHECK_PACKAGES_CONFIG" != "" ]; then
+    config_file="$CHECK_PACKAGES_CONFIG"
+  else
+    echo "No packages configuration file specified."
+    echo "  a) You can specify a parameter for this script"
+    echo "  b) You can specify an environment variable CHECK_PACKAGES_CONFIG"
+    exit 1
+  fi
+fi
 
+cat $config_file | xargs -l1 bash -c "python $CHECK_VERSION \$0 \$1 \$2" | xargs -I__check__ echo __check__

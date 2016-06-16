@@ -29,20 +29,20 @@ def get_latest_package(archive, app_name, distro_url = DISTRO_ARCH_SERIES_URL):
   )
 
   if len(binaries) == 0:
-    print "No entries found for app: " + sys.argv[1] + " in archive: " + str(archive)
-    exit(1)
+    print("No entries found for app: " + sys.argv[1] + " in archive: " + str(archive))
+    sys.exit(1)
   elif __DEBUG__ == True:
-    print "Found " + str(len(binaries)) + " matches"
+    print("Found " + str(len(binaries)) + " matches")
     for sources in binaries:
-      print str(sources.display_name)
+      print(str(sources.display_name))
 
   return binaries[0]
 
 def parse_args():
   if len(sys.argv) < 2:
-    print "Usage: " + sys.argv[0] + " <app name>  [ppa url]"
-    print "Example: " + sys.argv[0] + " solaar ppa:daniel.pavel/solaar"
-    exit(1)
+    print("Usage: " + sys.argv[0] + " <app name>  [ppa url]")
+    print("Example: " + sys.argv[0] + " solaar ppa:daniel.pavel/solaar")
+    sys.exit(1)
 
   app_name = sys.argv[1]
   ppa_url = None
@@ -57,13 +57,15 @@ def print_api(obj):
   print(sorted(obj.lp_entries))
   print(sorted(obj.lp_collections))
 
-if __name__ == '__main__':
-  [app_name, ppa_url] = parse_args()
+def get_latest_version(app_name, ppa_url):
   launchpad = Launchpad.login_anonymously('launchpad-helper', 'production')
   if ppa_url != None:
     archive = get_ppa_archive(launchpad, ppa_url)
   else:
     archive = get_distro_archive(launchpad)
   package = get_latest_package(archive, app_name)
-  print package.binary_package_version
-  exit(0)
+  return package.binary_package_version
+
+if __name__ == '__main__':
+  print(get_latest_version(*parse_args()))
+  sys.exit(0)

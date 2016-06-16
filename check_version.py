@@ -19,8 +19,27 @@ def parse_args():
 
   return [app_name, version, ppa_url]
 
+def parse_version(version_str):
+  version_arr = str.split(version_str, '.')
+  major = int(version_arr[0])
+  minor = 0
+  release = 0
+  if len(version_arr) > 1:
+    minor = int(version_arr[1])
+  if len(version_arr) > 2:
+    release = int(str.split(version_arr[2], '-')[0])
+
+  return (major * 100) + (minor * 10) + release
+
 def main(app_name, version, ppa_url):
-  print(get_latest_version(app_name, ppa_url))
+  latest_version = get_latest_version(app_name, ppa_url)
+  latest = parse_version(str(latest_version))
+  current = parse_version(str(version))
+  stats = 'current:' + version + ', latest:' + latest_version + ', ' + ppa_url
+  if current < latest:
+    print app_name + ': out-of-date, ' + stats
+  else:
+    print app_name + ': up-to-date, ' + stats
 
 if __name__ == '__main__':
   main(*parse_args())

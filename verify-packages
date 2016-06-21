@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [ -f "/tmp/.launchpad-helper.outofdate.$USER" ]; then
+  out_of_date_packages=$(cat /tmp/.launchpad-helper.outofdate.$USER)
+else
+  out_of_date_packages=$(check-all-versions | grep "out-of-date")
+  echo $out_of_date_packages > /tmp/.launchpad-helper.outofdate.$USER
+fi
+
+if [ "$out_of_date_packages" != "" ]; then
+  echo "Some of your manually installed packages are out of date:"
+  echo $out_of_date_packages
+fi

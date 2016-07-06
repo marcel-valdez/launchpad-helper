@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 
-if [ -f "/tmp/.launchpad-helper.outofdate.$USER" ]; then
-  out_of_date_packages=$(cat /tmp/.launchpad-helper.outofdate.$USER)
+CACHE_FILE="/tmp/.launchpad-helper.outofdate.$USER"
+
+if [ "$1" == "--help" ]; then
+  echo "Usage: verify-packages [--help|--use-cache]"
+  echo "--help: show this message"
+  echo "--use-cache: use the results of previous executions of this command, instead of recalculating"
+  exit 0
+fi
+
+if [ "$1" == "--use-cache" ] && [ -f "$CACHE_FILE" ]; then
+  out_of_date_packages=$(cat "$CACHE_FILE")
 else
   out_of_date_packages=$(check-all-versions | grep "out-of-date")
-  echo $out_of_date_packages > /tmp/.launchpad-helper.outofdate.$USER
+  echo "$out_of_date_packages" > $CACHE_FILE
 fi
 
 if [ "$out_of_date_packages" != "" ]; then

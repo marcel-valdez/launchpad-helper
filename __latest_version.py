@@ -20,6 +20,28 @@ def get_distro_archive(launchpad, distro_name = DISTRO):
   distro = launchpad.distributions[distro_name]
   return distro.main_archive
 
+def get_latest_source(archive, app_name, distro_url = DISTRO_ARCH_SERIES_URL):
+  for series in archive.distribution.series.entries:
+    if series['displayname'].lower() == RELEASE.lower():
+      distro_series = series['self_link']
+  sources = archive.getPublishedSources(
+    status = 'Published',
+    exact_match = True,
+    source_name = app_name,
+    distro_series = distro_series
+  )
+
+
+  if len(sources) == 0:
+     print("No entries found for app: " + sys.argv[1] + " in archive: " + str(archive))
+     sys.exit(1)
+  elif __DEBUG__ == True:
+    print("Found " + str(len(sources)) + " matches")
+    for source in sources:
+      print(str(source.display_name))
+
+  return sources[0]
+
 def get_latest_package(archive, app_name, distro_url = DISTRO_ARCH_SERIES_URL):
   binaries = archive.getPublishedBinaries(
     status = 'Published',
@@ -49,23 +71,37 @@ def parse_args():
   if len(sys.argv) > 2:
     ppa_url = sys.argv[2]
 
-  return [app_name, ppa_url]
+  get_url = None
+  if len(sys.argv) > 3:
+    get_url = sys.argv[3].lower() == "--get_url"
+
+  return { 'app_name': app_name, 'ppa_url': ppa_url, 'get_url': get_url }
 
 def print_api(obj):
-  print(sorted(obj.lp_attributes))
-  print(sorted(obj.lp_operations))
-  print(sorted(obj.lp_entries))
-  print(sorted(obj.lp_collections))
+  print('lp_attributes: ' + str(sorted(obj.lp_attributes)))
+  print('lp_operations: ' + str(sorted(obj.lp_operations)))
+  print('lp_entries: ' + str(sorted(obj.lp_entries)))
+  print('lp_collections: ' + str(sorted(obj.lp_collections)))
 
-def get_latest_version(app_name, ppa_url):
+def get_archive(ppa_url):
   launchpad = Launchpad.login_anonymously('launchpad-helper', 'production')
   if ppa_url != None:
-    archive = get_ppa_archive(launchpad, ppa_url)
+    return get_ppa_archive(launchpad, ppa_url)
   else:
-    archive = get_distro_archive(launchpad)
-  package = get_latest_package(archive, app_name)
-  return package.binary_package_version
+    return get_distro_archive(launchpad)
+
+def get_latest_url(archive, app_name):
+  return get_latest_source(archive, app_name).binaryFileUrls()[0]
+
+def get_latest_version(archive, app_name):
+  return get_latest_source(archive, app_name).source_package_version
 
 if __name__ == '__main__':
-  print(get_latest_version(*parse_args()))
+  args = parse_args()
+  archive = get_archive(args['ppa_url'])
+  if args['get_url'] == True:
+    print(get_latest_url(archive, args['app_name']))
+  else:
+    print(get_latest_version(archive, args['app_name']))
+
   sys.exit(0)

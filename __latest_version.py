@@ -24,6 +24,7 @@ def get_latest_source(archive, app_name, distro_url = DISTRO_ARCH_SERIES_URL):
   for series in archive.distribution.series.entries:
     if series['displayname'].lower() == RELEASE.lower():
       distro_series = series['self_link']
+
   sources = archive.getPublishedSources(
     status = 'Published',
     exact_match = True,

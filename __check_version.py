@@ -4,6 +4,7 @@ import sys
 
 from launchpadlib.launchpad import Launchpad
 from __latest_version import get_latest_version
+from __latest_version import get_archive
 
 def parse_args():
   if len(sys.argv) < 3:
@@ -32,7 +33,8 @@ def parse_version(version_str):
   return (major * 100) + (minor * 10) + release
 
 def main(app_name, version, ppa_url):
-  latest_version = get_latest_version(app_name, ppa_url)
+  archive = get_archive(ppa_url)
+  latest_version = get_latest_version(archive, app_name)
   latest = parse_version(str(latest_version))
   current = parse_version(str(version))
   stats = 'current:' + version + ', latest:' + latest_version + ', ' + ppa_url

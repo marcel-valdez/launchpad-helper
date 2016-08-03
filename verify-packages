@@ -2,14 +2,44 @@
 
 CACHE_FILE="/tmp/.launchpad-helper.outofdate.$USER"
 
-if [ "$1" == "--help" ]; then
+function usage() {
   echo "Usage: verify-packages [--help|--use-cache]"
   echo "--help: show this message"
   echo "--use-cache: use the results of previous executions of this command, instead of recalculating"
-  exit 0
-fi
+}
 
-if [ "$1" == "--use-cache" ] && [ -f "$CACHE_FILE" ]; then
+# Use -gt 1 to consume two arguments per pass in the loop (e.g. each
+# argument has a corresponding value to go with it).
+# Use -gt 0 to consume one or more arguments per pass in the loop (e.g.
+# some arguments don't have a corresponding value to go with it such
+# as in the --default example).
+# note: if this is set to -gt 0 the /etc/hosts part is not recognized ( may be a bug )
+while [[ $# -gt 1 ]]
+do
+__arg="$1"
+
+case $__arg in
+    -h|--help)
+    usage
+    exit 0
+    ;;
+    -c|--use-cache)
+    __USE_CACHE="true"
+    shift # past argument
+    ;;
+    -u|--update)
+    __UPDATE="true"
+    shift # past argument
+    ;;
+    *)
+    usage
+    exit 1
+    ;;
+esac
+shift # past argument or value
+done
+
+if [ "$__USE_CACHE" == "true" ] && [ -f "$CACHE_FILE" ]; then
   out_of_date_packages=$(cat "$CACHE_FILE")
 else
   out_of_date_packages=$(check-all-versions | grep "out-of-date")
@@ -19,4 +49,12 @@ fi
 if [ "$out_of_date_packages" != "" ]; then
   echo "Some of your manually installed packages are out of date:"
   echo $out_of_date_packages
+
+  if [ "$__UPDATE" == "true" ]; then
+    echo "Updating out of date packages"
+    echo "$out_of_date_packages" | cut -d: -f1,5 | \
+      sed 's/:/ ppa:/' | \
+      sed 's/^/update-package /' | \
+      xargs -I_CMD_ bash -c "_CMD_"
+  fi
 fi
